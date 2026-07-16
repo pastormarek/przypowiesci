@@ -169,6 +169,33 @@ footer.colophon strong{color:var(--ink-soft); font-weight:600}
   .chapter-head{padding-top:2.2rem}
   .part-roman{font-size:2.6rem}
 }
+
+/* ==== DRUK / PDF ==== (zachowuje bieżący rozmiar tekstu z data-fs; reszta pod papier) */
+@media print{
+  /* jasna paleta pod druk niezależnie od wybranego tła; --read (rozmiar) NIE ruszany */
+  :root[data-theme]{
+    --paper:#fff; --paper-2:#fff; --panel:#f3f1ec;
+    --ink:#1b1b1b; --ink-soft:#3f3f3f; --ink-faint:#666;
+    --rubric:#8a2a22; --rule:rgba(0,0,0,.16); --rule-strong:rgba(0,0,0,.3); --shadow:transparent;
+  }
+  html,body{background:#fff !important}
+  /* elementy ekranowe znikają z wydruku */
+  #progress,.topbar,.toc-backdrop,.toc-panel,#totop,.comments{display:none !important}
+  /* kolumna na całą szerokość strony; marginesy ustawia @page */
+  main{max-width:none; padding:0}
+  .part-divider,footer.colophon{max-width:none}
+  @page{margin:18mm 17mm}
+  /* każdy rozdział i przekładka części zaczyna nową stronę */
+  .chapter{break-before:page; page-break-before:always}
+  .chapter:first-of-type{break-before:auto; page-break-before:auto}
+  .part-divider{break-before:page; page-break-before:always}
+  /* nie urywać nagłówków od treści, ani cytatów/scen w poprzek stron */
+  .chapter-head,.chapter-title,.part-name{break-after:avoid; page-break-after:avoid}
+  blockquote.scripture,.scene{break-inside:avoid; page-break-inside:avoid}
+  .prose p{orphans:2; widows:2}
+  /* zachowaj akcent ramki cytatu na papierze */
+  blockquote.scripture{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+}
 </style>
 </head>
 <body>
@@ -191,6 +218,7 @@ footer.colophon strong{color:var(--ink-soft); font-weight:600}
     </div>
     <button class="ctrl" id="fontBtn" aria-label="Zmień krój pisma">Krój</button>
     <button class="ctrl" id="themeBtn" aria-label="Zmień tło">Tło</button>
+    <button class="ctrl" id="printBtn" aria-label="Drukuj lub zapisz jako PDF" title="Zapisz jako PDF w bieżącym rozmiarze tekstu">Druk / PDF</button>
   </div>
 </div>
 
@@ -1327,6 +1355,10 @@ footer.colophon strong{color:var(--ink-soft); font-weight:600}
   function setFont(f){ root.setAttribute('data-font',f); fBtn.textContent='Krój: '+FLABEL[f]; LS.s('pp-font',f); }
   var savedFont=LS.g('pp-font'); setFont(savedFont&&FLABEL[savedFont] ? savedFont : 'serif');
   fBtn.addEventListener('click',function(){ setFont(FONTS[(FONTS.indexOf(root.getAttribute('data-font'))+1)%FONTS.length]); });
+
+  /* --- druk / PDF (dialog druku dziedziczy bieżący rozmiar tekstu z data-fs) --- */
+  var pBtn=document.getElementById('printBtn');
+  if(pBtn){ pBtn.addEventListener('click',function(){ window.print(); }); }
 
   /* --- spis treści --- */
   var panel=document.getElementById('toc'), back=document.getElementById('tocBack');
